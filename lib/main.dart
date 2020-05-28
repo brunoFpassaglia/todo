@@ -82,15 +82,33 @@ class _HomeState extends State<Home> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.only(top: 10, bottom: 10, left: 15),
-              itemCount: _toDoList.length,
-              itemBuilder: itemBuilder,
-            ),
+            child: RefreshIndicator(
+                child: ListView.builder(
+                  padding: EdgeInsets.only(top: 10, bottom: 10, left: 15),
+                  itemCount: _toDoList.length,
+                  itemBuilder: itemBuilder,
+                ),
+                onRefresh: _refresh),
           ),
         ],
       ),
     );
+  }
+
+  Future<Null> _refresh() async {
+    await Future.delayed(Duration(seconds: 1));
+
+    setState(() {
+      _toDoList.sort((a, b) {
+        if (a["ok"] && !b["ok"])
+          return -1;
+        else if (!a["ok"] && b["ok"])
+          return 1;
+        else
+          return 0;
+      });
+      _saveData();
+    });
   }
 
   Widget itemBuilder(context, index) {
@@ -141,6 +159,7 @@ class _HomeState extends State<Home> {
                 }),
             duration: Duration(seconds: 3),
           );
+          Scaffold.of(context).removeCurrentSnackBar();
           Scaffold.of(context).showSnackBar(snack);
         });
       },
